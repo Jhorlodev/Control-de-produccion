@@ -23,16 +23,14 @@ jobs:
           node-version: 20
 
       - name: Install and build Astro
-        uses: withastro/action@v2
-        # Opciones opcionales:
-        # with:
-        #   path: .
-        #   package-manager: pnpm@latest
+        uses: withastro/action@v3
+        with:
+          package-manager: npm
 
       - name: Upload artifact
         uses: actions/upload-pages-artifact@v3
         with:
-          path: ./dist  # Asegúrate de que coincida con la carpeta de salida de Astro
+          path: ./dist
 
   deploy:
     needs: build
