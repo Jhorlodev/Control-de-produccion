@@ -5,5 +5,5 @@ import react from '@astrojs/react';
 export default defineConfig({
   integrations: [react()],
   output: "static", 
-  site:"https:/jhorlodev.github.io",
+  site:"https:/control.github.io",
 });
