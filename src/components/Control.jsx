@@ -58,7 +58,7 @@ function Control() {
     <div className='containerp'>
       <div className='container'>
         <h1>Inventario de Produccion</h1>
-        <a className='buttonList' href="../Lista">Ir a Listado de Productos</a>
+        <a className='buttonList' href="..control/Lista">Ir a Listado de Productos</a>
         <form onSubmit={handleSubmit}>
           <label className='labelProduct'>
             Producto: 
