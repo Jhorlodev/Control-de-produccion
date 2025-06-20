@@ -4,6 +4,6 @@ import react from '@astrojs/react';
 
 export default defineConfig({
   integrations: [react()],
-  output: "static", 
-  site:"https:/control.github.io",
+  base: '/control',
+  site: 'https://control.github.io',
 });
