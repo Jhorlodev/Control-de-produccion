@@ -4,7 +4,6 @@ import react from '@astrojs/react';
 
 export default defineConfig({
   integrations: [react()],
-  output: "static", 
   site:"https://jhorlodev.github.io",
-  base:"/Control-de-produccion/",
+ base:"/control/"
 });
