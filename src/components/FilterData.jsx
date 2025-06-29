@@ -1,7 +1,17 @@
-// src/components/FilterTable.jsx
 import { useState, useEffect } from 'react';
 import { supabase } from '../lib/supabase.jsx';
-import '../components/Styles.css/App.css'
+import './Styles.css/FilterTable.css'; // Asegúrate de crear este archivo con los estilos que te doy abajo
+
+// Hook para detectar ancho de ventana
+function useWindowWidth() {
+  const [width, setWidth] = useState(0);
+  useEffect(() => {
+    const handleResize = () => setWidth(window.innerWidth);
+    window.addEventListener('resize', handleResize);
+    return () => window.removeEventListener('resize', handleResize);
+  }, []);
+  return width;
+}
 
 export default function FilterTable() {
   const [data, setData] = useState([]);
@@ -12,15 +22,17 @@ export default function FilterTable() {
   const [totalHecho, setTotalHecho] = useState(0);
   const [totalRestan, setTotalRestan] = useState(0);
 
+  const width = useWindowWidth();
+  const isMobile = width < 768;
+
   useEffect(() => {
-    const fetchDatos = async () => { 
+    const fetchDatos = async () => {
       try {
         const { data, error } = await supabase.from('control').select('*');
         if (error) throw error;
         setData(data);
         setResultados(data);
-        
-        // Calcular totales
+
         const reqTotal = data.reduce((sum, item) => sum + (item.requerimiento || 0), 0);
         const hechoTotal = data.reduce((sum, item) => sum + (item.hecho || 0), 0);
         setTotalRequerimiento(reqTotal);
@@ -54,8 +66,7 @@ export default function FilterTable() {
       const newData = data.filter((item) => item.id !== id);
       setData(newData);
       setResultados(newData);
-      
-      // Recalcular totales
+
       const reqTotal = newData.reduce((sum, item) => sum + (item.requerimiento || 0), 0);
       const hechoTotal = newData.reduce((sum, item) => sum + (item.hecho || 0), 0);
       setTotalRequerimiento(reqTotal);
@@ -85,18 +96,17 @@ export default function FilterTable() {
         .select();
 
       if (error) throw error;
-      
-      const newData = data.map((item) => 
+
+      const newData = data.map((item) =>
         item.id === updatedData[0].id ? updatedData[0] : item
       );
-      
+
       setData(newData);
       setResultados(newData.filter((item) =>
         item.producto.toLowerCase().includes(busqueda.toLowerCase())
       ));
       setElementoSeleccionado(null);
-      
-      // Recalcular totales
+
       const reqTotal = newData.reduce((sum, item) => sum + (item.requerimiento || 0), 0);
       const hechoTotal = newData.reduce((sum, item) => sum + (item.hecho || 0), 0);
       setTotalRequerimiento(reqTotal);
@@ -111,8 +121,7 @@ export default function FilterTable() {
     <div className="containerp">
       <div className="container">
         <h1>Lista de Datos</h1>
-        
-        {/* Campo de búsqueda */}
+
         <div className="search-container">
           <input
             type="text"
@@ -120,16 +129,17 @@ export default function FilterTable() {
             value={busqueda}
             onChange={handleChange}
             className="search-input"
+            aria-label="Buscar producto"
           />
         </div>
-        
-        {/* Formulario de edición */}
+
         {elementoSeleccionado && (
           <form onSubmit={actualizar} className="edit-form">
             <h3>Editar Elemento</h3>
             <div className="form-group">
-              <label>Producto:</label>
+              <label htmlFor="producto">Producto:</label>
               <input
+                id="producto"
                 type="text"
                 value={elementoSeleccionado.producto}
                 onChange={(e) => setElementoSeleccionado({
@@ -139,8 +149,9 @@ export default function FilterTable() {
               />
             </div>
             <div className="form-group">
-              <label>Requerimiento:</label>
+              <label htmlFor="requerimiento">Requerimiento:</label>
               <input
+                id="requerimiento"
                 type="number"
                 value={elementoSeleccionado.requerimiento}
                 onChange={(e) => setElementoSeleccionado({
@@ -150,8 +161,9 @@ export default function FilterTable() {
               />
             </div>
             <div className="form-group">
-              <label>Hecho:</label>
+              <label htmlFor="hecho">Hecho:</label>
               <input
+                id="hecho"
                 type="number"
                 value={elementoSeleccionado.hecho}
                 onChange={(e) => setElementoSeleccionado({
@@ -161,8 +173,9 @@ export default function FilterTable() {
               />
             </div>
             <div className="form-group">
-              <label>Fecha:</label>
+              <label htmlFor="fecha">Fecha:</label>
               <input
+                id="fecha"
                 type="date"
                 value={elementoSeleccionado.fecha}
                 onChange={(e) => setElementoSeleccionado({
@@ -177,36 +190,55 @@ export default function FilterTable() {
             </button>
           </form>
         )}
-        
-        {/* Tabla de datos */}
-        <table>
-          <thead>
-            <tr>
-              <th>Descripción</th>
-              <th>Qty Total</th>
-              <th>Qty Parcial</th>
-              <th>Restan</th>
-              <th>Fecha</th>
-              <th>Acciones</th>
-            </tr>
-          </thead>
-          <tbody>
-            {resultados?.map((item) => (
-              <tr key={item.id}>
-                <td>{item.producto}</td>
-                <td>{item.requerimiento}</td>
-                <td>{item.hecho}</td>
-                <td>{item.requerimiento - item.hecho}</td>
-                <td>{item.fecha}</td>
-                <td>
-                  <button onClick={() => editar(item)}>Editar</button>
-                  <button onClick={() => eliminar(item.id)}>Eliminar</button>
-                </td>
-              </tr>
+
+        {isMobile ? (
+          <div className="cards-container">
+            {resultados.map((item) => (
+              <div key={item.id} className="card">
+                <h3>{item.producto}</h3>
+                <p><b>Qty Total:</b> {item.requerimiento}</p>
+                <p><b>Qty Parcial:</b> {item.hecho}</p>
+                <p><b>Restan:</b> {item.requerimiento - item.hecho}</p>
+                <p><b>Fecha:</b> {item.fecha}</p>
+                <button onClick={() => editar(item)} aria-label={`Editar ${item.producto}`}>
+                  Editar
+                </button>
+                <button onClick={() => eliminar(item.id)} aria-label={`Eliminar ${item.producto}`}>
+                  Eliminar
+                </button>
+              </div>
             ))}
-            
-          </tbody>
-        </table>
+          </div>
+        ) : (
+          <table>
+            <thead>
+              <tr>
+                <th>Descripción</th>
+                <th>Qty Total</th>
+                <th>Qty Parcial</th>
+                <th>Restan</th>
+                <th>Fecha</th>
+                <th>Acciones</th>
+              </tr>
+            </thead>
+            <tbody>
+              {resultados.map((item) => (
+                <tr key={item.id}>
+                  <td>{item.producto}</td>
+                  <td>{item.requerimiento}</td>
+                  <td>{item.hecho}</td>
+                  <td>{item.requerimiento - item.hecho}</td>
+                  <td>{item.fecha}</td>
+                  <td>
+                    <button onClick={() => editar(item)}>Editar</button>
+                    <button onClick={() => eliminar(item.id)}>Eliminar</button>
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        )}
+
       </div>
     </div>
   );
