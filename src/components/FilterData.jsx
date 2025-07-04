@@ -1,8 +1,10 @@
 import { useState, useEffect } from 'react';
 import { supabase } from '../lib/supabase.jsx';
-import './Styles.css/FilterTable.css'; // Asegúrate de crear este archivo con los estilos que te doy abajo
+import './Styles.css/FilterTable.css'; 
+import { PDFDownloadLink } from '@react-pdf/renderer';
+import PDF from './PDF.jsx';
 
-// Hook para detectar ancho de ventana
+
 function useWindowWidth() {
   const [width, setWidth] = useState(0);
   useEffect(() => {
@@ -206,8 +208,12 @@ export default function FilterTable() {
                 <button onClick={() => eliminar(item.id)} aria-label={`Eliminar ${item.producto}`}>
                   Eliminar
                 </button>
+                <PDFDownloadLink document={<PDF />} fileName="document.pdf">
+                  {({ loading }) => (loading ? 'Cargando...' : 'Descargar PDF')}
+                </PDFDownloadLink>
               </div>
             ))}
+            
           </div>
         ) : (
           <table>
@@ -229,9 +235,13 @@ export default function FilterTable() {
                   <td>{item.hecho}</td>
                   <td>{item.requerimiento - item.hecho}</td>
                   <td>{item.fecha}</td>
+                    
                   <td>
                     <button onClick={() => editar(item)}>Editar</button>
                     <button onClick={() => eliminar(item.id)}>Eliminar</button>
+                    <PDFDownloadLink document={<PDF />} fileName="document.pdf">
+                      {({ loading }) => (loading ? ' Cargando...' : 'Descargar PDF')}
+                    </PDFDownloadLink>
                   </td>
                 </tr>
               ))}
